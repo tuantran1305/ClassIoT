@@ -1,3 +1,0 @@
-TaskHandle_t taskBlinkLed_p;
-TaskHandle_t taskSendDatat_p;
-TaskHandle_t taskCheckButton_p;
