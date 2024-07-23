@@ -22,6 +22,6 @@ bool isConnected_tb();
 void check_connectTb();
 void earth();
 void publishData(const char* payload1);
-String get_gpio_status();
+//String get_gpio_status();
 void set_gpio_status(int pin, boolean enabled);
 void on_message(const char* topic, byte* payload, unsigned int length);

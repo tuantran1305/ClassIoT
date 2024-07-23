@@ -11,17 +11,18 @@ void setup() {
   xTaskCreatePinnedToCore(WifiAndThingsBoard, "WiFi and MQTT", 4000, NULL, 1, &Task2_p, 0);
   xTaskCreatePinnedToCore(publishTask, "publish", 4000, NULL, 1, &Task3_p, 0);
   xTaskCreatePinnedToCore(earth, "Earth", 4000, NULL, 1, &Task4_p, 1);
-  xTaskCreatePinnedToCore(callback, "Call Back Data", 4000, NULL, 1, &Task5_p, 1);
+  //xTaskCreatePinnedToCore(callback, "Call Back Data", 4000, NULL, 1, &Task5_p, 1);
 }
 void turn_led(void *pvParameters) {
   while (1) {
     buttonState = digitalRead(BUTTON_PIN);
-    if (buttonState == HIGH && lastbuttonState == LOW) {
-      digitalWrite(LED_PIN, ledState);
-      ledState = !ledState;
-      Serial.println(!ledState);
+    if (buttonState != lastbuttonState) {
+      lastbuttonState = buttonState;
+      if (buttonState == LOW) {
+        ledState = (ledState == HIGH) ? LOW : HIGH;
+        digitalWrite(LED_PIN, ledState);
+      }
     }
-    lastbuttonState = buttonState;
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
@@ -29,21 +30,19 @@ void WifiAndThingsBoard(void *pvParameters) {
   while (1) {
     check_connectTb();
     reconnectWifi();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+    vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
 void publishTask(void *pvParamaters) {
   while (1) {
     if (isConnected_tb()) {
-      String payload1 = "{";
-      payload1 += "\"Độ ẩm đất\": value_earth,";
-      payload1 += String(percent);
-      payload1 += "}";
+      String payload1 = "{\"Soil humidity\":\"" + String(percent) + "%" + "\"," + "\"Led State\":\"" + String(ledState) + "\"}";
       Serial.print("Publishing payload: ");
       Serial.println(payload1);
       publishData(payload1.c_str());
     }
-    vTaskDelay(3000 / portTICK_PERIOD_MS);
+    vTaskDelay(30000 / portTICK_PERIOD_MS);
   }
 }
 void earth(void *pvParameters) {
@@ -52,17 +51,7 @@ void earth(void *pvParameters) {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
-void callback(void *pvParameters) {
-  while (1) {
-    if (isConnected_tb()) {
-      char *topic;
-      byte *payload;
-      int length;
-      on_message(topic, payload, length);
-      vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
-  }
-}
+
 void loop() {
   // put your main code here, to run repeatedly:
 }

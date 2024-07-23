@@ -14,11 +14,13 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 void init_tb() {
   client.setServer(tb_server, tb_port);
+  client.setCallback(on_message);
   reconnected_tb();
 }
 void reconnected_tb() {
   while (!client.connected()) {
     if (client.connect("Hieu", token, NULL)) {
+      client.subscribe("v1/devices/me/attributes");
       Serial.println("connected");
     } else {
       delay(500);
@@ -33,7 +35,6 @@ void check_connectTb() {
     reconnected_tb();
   }
   client.loop();
-  delay(1000);
 }
 void initWifi() {
   Serial.println("Dang ket noi...");
@@ -60,27 +61,13 @@ void publishData(const char* payload1) {
 }
 void earth() {
   value_earth = analogRead(EARTH_SENSOR);
-  percent = map(value_earth, 0, 1023, 0, 100);
+  percent = map(value_earth, 0, 4095, 0, 100);
   Serial.print(percent);
   Serial.println("%");
 }
-String get_gpio_status() {
-  // Prepare gpios JSON payload string
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& data = jsonBuffer.createObject();
-  data[String(LED_PIN)] = ledState ? true : false;
-  char payload[256];
-  data.printTo(payload, sizeof(payload));
-  String strPayload = String(payload);
-  Serial.print("Get gpio status: ");
-  Serial.println(strPayload);
-  return strPayload;
-}
-void set_gpio_status(int pin, boolean enabled) {
+void set_gpio_status( int pin , boolean enabled) {
   if (pin == LED_PIN) {
-    // Output GPIOs state
     digitalWrite(LED_PIN, enabled ? HIGH : LOW);
-    // Update GPIOs state
     ledState = enabled;
   }
 }
@@ -89,36 +76,22 @@ void on_message(const char* topic, byte* payload, unsigned int length) {
   Serial.println("On message");
 
   char json[length + 1];
-  strncpy (json, (char*)payload, length);
+  strncpy(json, (char*)payload, length);
   json[length] = '\0';
 
   Serial.print("Topic: ");
   Serial.println(topic);
   Serial.print("Message: ");
   Serial.println(json);
-
-  // Decode JSON request
   StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& data = jsonBuffer.parseObject((char*)json);
+  JsonObject& data = jsonBuffer.parseObject(json);
 
-  if (!data.success())
-  {
-    Serial.println("parseObject() failed");
-    return;
-  }
-
-  // Check request method
-  String methodName = String((const char*)data["method"]);
-
-  if (methodName.equals("getGpioStatus")) {
-    String responseTopic = String(topic);
-    responseTopic.replace("request", "response");
-    client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-  } else if (methodName.equals("setGpioStatus")) {
-    set_gpio_status(data["params"]["pin"], data["params"]["enabled"]);
-    String responseTopic = String(topic);
-    responseTopic.replace("request", "response");
-    client.publish(responseTopic.c_str(), get_gpio_status().c_str());
-    client.publish("v1/devices/me/attributes", get_gpio_status().c_str());
+  if (data.success()) {
+    if (data.containsKey("led")) {
+      bool ledState = data["led"];
+      set_gpio_status(LED_PIN, ledState);
+    }
+  } else {
+    Serial.println("Khong xu ly duoc du lieu");
   }
 }
