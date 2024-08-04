@@ -30,7 +30,6 @@ void WifiAndThingsBoard(void *pvParameters) {
   while (1) {
     check_connectTb();
     reconnectWifi();
-
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
