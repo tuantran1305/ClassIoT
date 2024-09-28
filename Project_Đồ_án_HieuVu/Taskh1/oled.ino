@@ -14,25 +14,24 @@ void setupOled() {
   Serial.println("kết nối được với oled");
 }
 void displayOled() {
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+    mpu_read();
     display.clearDisplay();
     display.setCursor(0, 0);
 
     display.println("Accelerometer - m/s^2");
-    display.print(a.acceleration.x, 1);
+    display.print(ax, 1);
     display.print(", ");
-    display.print(a.acceleration.y, 1);
+    display.print(ay, 1);
     display.print(", ");
-    display.print(a.acceleration.z, 1);
+    display.print(az, 1);
     display.println("");
 
     display.println("Gyroscope - rps");
-    display.print(g.gyro.x, 1);
+    display.print(gx, 1);
     display.print(", ");
-    display.print(g.gyro.y, 1);
+    display.print(gy, 1);
     display.print(", ");
-    display.print(g.gyro.z, 1);
+    display.print(gz, 1);
     display.println("");
 
 

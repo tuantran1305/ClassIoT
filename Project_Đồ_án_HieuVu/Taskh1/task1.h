@@ -7,6 +7,7 @@ extern float totalAcceleration;
 // extern unsigned long previous_data ;
 void display_MPU();
 void setupMPU();
+void mpu_read();
 // #define SDA_1 33
 // #define SCL_1 32
 // MAX30100
@@ -16,7 +17,6 @@ void set_MAX();
 void display_MAX();
 void onBeatDetected();
 PulseOximeter pox;
-Adafruit_MPU6050 mpu;
 extern uint32_t tsLastReport;
 extern uint32_t tsLastReport1;
 extern uint8_t Heart;
