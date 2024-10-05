@@ -1,6 +1,7 @@
 import psutil
 import platform
 import time
+import threading
 # Lấy thông tin hệ điều hành
 def get_system_info():
     name = platform.uname()
@@ -12,10 +13,7 @@ def get_system_info():
         }
     return system_info
 
-
-
-# In thông tin
-if __name__ == "__main__":
+def main():
     try:    
         while True:
             print("System Information:")
@@ -24,3 +22,9 @@ if __name__ == "__main__":
             time.sleep(10)
     except KeyboardInterrupt:
         print("loi")
+
+# In thông tin
+if __name__ == "__main__":
+    a = threading.Thread(target=main)
+    a.start()
+    a.join()
